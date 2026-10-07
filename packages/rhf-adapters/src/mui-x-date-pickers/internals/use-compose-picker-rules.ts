@@ -92,7 +92,7 @@ export function useUnstableComposePickerRules<
           ),
         maxTime: (date: TTransformedValue) =>
           getMessage(
-            messages?.maxTime ?? 'Time is earlier than the minimum allowed time',
+            messages?.maxTime ?? 'Time is later than the maximum allowed time',
             date,
             'maxTime' in validationProps ? validationProps.maxTime : undefined,
           ),
@@ -104,7 +104,7 @@ export function useUnstableComposePickerRules<
           ),
         minTime: (date: TTransformedValue) => {
           return getMessage(
-            messages?.minTime ?? 'Time is later than the maximum allowed time',
+            messages?.minTime ?? 'Time is earlier than the minimum allowed time',
             date,
             'minTime' in validationProps ? validationProps.minTime : undefined,
           );

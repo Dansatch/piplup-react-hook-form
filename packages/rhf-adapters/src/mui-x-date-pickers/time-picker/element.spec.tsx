@@ -63,4 +63,30 @@ describe('MuiXTimePickerElement', () => {
     await expect.element(field).toBeInTheDocument();
     await expect.element(field).toHaveTextContent(target.format('hh:mm A'));
   });
+
+  test('shows the correct default messages for time limits', async () => {
+    const screen = await render(
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <FormContainer
+          defaultValues={{
+            afterMaximum: dayjs('2021-02-14T10:00:00.000Z'),
+            beforeMinimum: dayjs('2021-02-14T08:00:00.000Z'),
+          }}
+        >
+          <MuiXTimePickerElement maxTime={dayjs('2021-02-14T09:00:00.000Z')} name="afterMaximum" />
+          <MuiXTimePickerElement minTime={dayjs('2021-02-14T09:00:00.000Z')} name="beforeMinimum" />
+          <button type="submit">Submit</button>
+        </FormContainer>
+      </LocalizationProvider>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+
+    await expect
+      .element(screen.getByText('Time is later than the maximum allowed time'))
+      .toBeVisible();
+    await expect
+      .element(screen.getByText('Time is earlier than the minimum allowed time'))
+      .toBeVisible();
+  });
 });
