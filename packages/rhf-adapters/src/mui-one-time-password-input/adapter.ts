@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useControllerAdapter, type UseControllerAdapterProps } from '@piplup/rhf-core';
+import { forkRef } from '@piplup/utils';
 import { type MuiOtpInputProps } from 'mui-one-time-password-input';
 import { type PathValue, type FieldPath, type FieldValues } from 'react-hook-form';
 
@@ -66,7 +67,7 @@ export function useMuiOtpInputAdapter<
 
   const {
     error,
-    // ref: adapterRef,
+    ref: adapterRef,
     ...adapter
   } = useControllerAdapter<TTransformedValue, TFieldValues, TName>({
     ...rest,
@@ -82,21 +83,17 @@ export function useMuiOtpInputAdapter<
     ...adapter,
     ref,
     TextFieldsProps(index: number) {
-      // TODO: component stops accepting any user input if inputRef is passed to the component.
-      // Enable inputRef once this bug is addressed in `mui-one-time-password-input` package.
-      // https://github.com/viclafouch/mui-otp-input/issues/71
-      if (typeof TextFieldsProps === 'function') {
-        const textFieldsProps = TextFieldsProps(index);
-        return {
-          ...textFieldsProps,
-          error: error || !!textFieldsProps.error,
-          // inputRef: forkRef(textFieldsProps.ref, adapterRef),
-        };
-      }
+      const textFieldsProps =
+        typeof TextFieldsProps === 'function' ? TextFieldsProps(index) : TextFieldsProps;
       return {
-        ...TextFieldsProps,
-        error: error || !!TextFieldsProps?.error,
-        // inputRef: forkRef(TextFieldsProps?.ref, adapterRef),
+        ...textFieldsProps,
+        error: error || !!textFieldsProps?.error,
+        // React Hook Form keeps one ref per field, so attach it to the first box: focusing the
+        // field on error moves the caret to the start of the code. MuiOtpInput merges this
+        // `inputRef` with its own (fixed upstream in mui-one-time-password-input 3.0.1).
+        ...(index === 0 && {
+          inputRef: forkRef(textFieldsProps?.inputRef, adapterRef),
+        }),
       };
     },
   };
