@@ -75,7 +75,8 @@ export function getMessage(
   ...values: any
 ): string {
   return (
-    (typeof messageOrFunction === 'function' ? messageOrFunction(values) : messageOrFunction) || ''
+    (typeof messageOrFunction === 'function' ? messageOrFunction(...values) : messageOrFunction) ||
+    ''
   );
 }
 
@@ -163,9 +164,10 @@ export function useUnstableComposeRules<
   }
 
   if (!rules.pattern && pattern) {
+    const patternRegExp = pattern instanceof RegExp ? pattern : new RegExp(pattern);
     rules.pattern = {
-      message: getMessage(messages?.pattern ?? defaultMessages?.pattern, pattern, title),
-      value: pattern instanceof RegExp ? pattern : new RegExp(pattern),
+      message: getMessage(messages?.pattern ?? defaultMessages?.pattern, patternRegExp, title),
+      value: patternRegExp,
     };
   }
 
