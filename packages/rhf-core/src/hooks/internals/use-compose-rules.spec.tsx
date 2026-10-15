@@ -28,4 +28,18 @@ describe('useComposeRules', () => {
     const { container } = render(<Comp pattern="^a" />);
     expect(container.querySelector('[data-cy=r]')?.textContent).toContain('pattern');
   });
+
+  it('does not modify the rules object passed in', () => {
+    const shared = { validate: () => true };
+    render(<Comp maxLength={10} required rules={shared} />);
+    render(<Comp rules={shared} />);
+    expect(Object.keys(shared)).toEqual(['validate']);
+  });
+
+  it('does not leak composed rules between fields sharing a rules object', () => {
+    const shared = {};
+    render(<Comp required rules={shared} />);
+    const { container } = render(<Comp rules={shared} />);
+    expect(container.querySelector('[data-cy=r]')?.textContent).toBe('{}');
+  });
 });

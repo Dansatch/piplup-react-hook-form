@@ -142,7 +142,9 @@ export function useUnstableComposeRules<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >(props: UseComposeRulesProps<TFieldValues, TName>) {
-  const { max, maxLength, messages, min, minLength, pattern, required, rules = {}, title } = props;
+  const { max, maxLength, messages, min, minLength, pattern, required, title } = props;
+  // Copy so the caller's rules object (often shared or memoized) is never modified.
+  const rules: NonNullable<UseComposeRulesProps<TFieldValues, TName>['rules']> = { ...props.rules };
 
   if (!rules.required && required) {
     rules.required = messages?.required ?? defaultMessages.required;
