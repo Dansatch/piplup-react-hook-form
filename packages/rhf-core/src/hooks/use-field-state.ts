@@ -77,7 +77,7 @@ export function useFieldState<
       },
       isSubmitting: {
         enumerable: true,
-        get: () => !!get(formState.isSubmitting, name),
+        get: () => formState.isSubmitting,
       },
       isTouched: {
         enumerable: true,
