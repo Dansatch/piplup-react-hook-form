@@ -61,11 +61,9 @@ function MuiTelInputComponent<
     ...rest
   } = props;
 
-  const {
-    inputRef: _inputRef,
-    ref: _ref,
-    ...adapter
-  } = useMuiTelInputAdapter(
+  // `adapter` includes `inputRef` (field ref merged with the user's) and `ref` (the forwarded ref).
+  // MuiTelInput merges `inputRef` with its own, so React Hook Form can focus the <input>.
+  const adapter = useMuiTelInputAdapter(
     {
       className,
       composeHelperText: true,
