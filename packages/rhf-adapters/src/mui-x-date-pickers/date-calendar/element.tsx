@@ -63,7 +63,12 @@ function MuiXDateCalendarComponent<
     ...rest
   } = props;
 
-  const { helperText: _helperText, ...adapter } = useMuiXDateCalendarAdapter(
+  // DateCalendar has no `error` or `helperText` prop, so keep them off the DOM.
+  const {
+    error: _error,
+    helperText: _helperText,
+    ...adapter
+  } = useMuiXDateCalendarAdapter(
     {
       classes: undefined,
       className,
