@@ -47,6 +47,7 @@ function MuiInputComponent<
     disableOnIsSubmitting,
     error,
     indeterminate,
+    inputRef,
     max,
     maxLength,
     messages,
@@ -67,7 +68,11 @@ function MuiInputComponent<
     ...rest
   } = props;
 
-  const { helperText: _helperText, ...adapter } = useMuiInputAdapterProps(
+  const {
+    helperText: _helperText,
+    ref: fieldInputRef,
+    ...adapter
+  } = useMuiInputAdapterProps(
     {
       checked,
       classes,
@@ -99,10 +104,11 @@ function MuiInputComponent<
       type,
       value,
     },
-    ref,
+    // Merge the field ref with any user `inputRef` so React Hook Form can focus the <input>.
+    inputRef,
   );
 
-  return <Input {...rest} {...adapter} />;
+  return <Input {...rest} {...adapter} inputRef={fieldInputRef} ref={ref} />;
 }
 
 export const MuiInputElement = React.forwardRef(MuiInputComponent) as typeof MuiInputComponent & {
