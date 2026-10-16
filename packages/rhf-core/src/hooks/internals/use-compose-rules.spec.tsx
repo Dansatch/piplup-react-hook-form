@@ -30,6 +30,20 @@ describe('useComposeRules', () => {
     expect(container.querySelector('[data-cy=r]')?.textContent).toContain('pattern');
   });
 
+  it('adds min and max rules when the limit is 0', () => {
+    const { container } = render(<Comp max={0} min={0} />);
+    const rules = JSON.parse(container.querySelector('[data-cy=r]')?.textContent ?? '{}');
+    expect(rules.min.value).toBe(0);
+    expect(rules.max.value).toBe(0);
+  });
+
+  it('keeps a 0 min/max passed through rules', () => {
+    const { container } = render(<Comp max={10} min={5} rules={{ max: 0, min: 0 }} />);
+    const rules = JSON.parse(container.querySelector('[data-cy=r]')?.textContent ?? '{}');
+    expect(rules.min).toBe(0);
+    expect(rules.max).toBe(0);
+  });
+
   it('passes rule values to message functions as separate arguments', () => {
     const { container } = render(
       <Comp

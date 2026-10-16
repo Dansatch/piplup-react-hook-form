@@ -171,14 +171,14 @@ export function useUnstableComposeRules<
     };
   }
 
-  if (!rules.min && min) {
+  if (rules.min === undefined && min !== undefined && min !== '') {
     rules.min = {
       message: getMessage(messages?.min ?? defaultMessages?.min, min),
       value: min,
     };
   }
 
-  if (!rules.max && max) {
+  if (rules.max === undefined && max !== undefined && max !== '') {
     rules.max = {
       message: getMessage(messages?.max ?? defaultMessages?.max, max),
       value: max,
