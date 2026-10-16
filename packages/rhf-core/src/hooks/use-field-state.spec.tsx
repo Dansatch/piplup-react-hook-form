@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { act, render, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { type FieldValues, type RegisterOptions, useFormContext } from 'react-hook-form';
@@ -25,6 +25,7 @@ function FieldStateConsumer({ name }: { name: string }) {
       <span data-cy="invalid">{state.invalid ? '1' : '0'}</span>
       <span data-cy="dirty">{state.isDirty ? '1' : '0'}</span>
       <span data-cy="touched">{state.isTouched ? '1' : '0'}</span>
+      <span data-cy="submitting">{state.isSubmitting ? '1' : '0'}</span>
     </div>
   );
 }
@@ -83,5 +84,31 @@ describe('useFieldState', () => {
 
     expect(container.querySelector('[data-cy=error]')?.textContent).toContain('1');
     expect(container.querySelector('[data-cy=invalid]')?.textContent).toContain('1');
+  });
+
+  it('reports isSubmitting while the submit handler is pending', async () => {
+    let finishSubmit = () => {};
+    const { container } = render(
+      <FormContainer
+        onSubmit={() =>
+          new Promise<void>((resolve) => {
+            finishSubmit = resolve;
+          })
+        }
+      >
+        <InputRegister name="name" />
+        <FieldStateConsumer name="name" />
+        <button type="submit">Submit</button>
+      </FormContainer>,
+    );
+
+    const submitting = () => container.querySelector('[data-cy=submitting]')?.textContent;
+    expect(submitting()).toBe('0');
+
+    await userEvent.click(container.querySelector('button[type=submit]') as HTMLButtonElement);
+    await waitFor(() => expect(submitting()).toBe('1'));
+
+    await act(async () => finishSubmit());
+    await waitFor(() => expect(submitting()).toBe('0'));
   });
 });
