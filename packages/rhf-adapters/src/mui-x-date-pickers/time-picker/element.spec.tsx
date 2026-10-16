@@ -1,11 +1,17 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { userEvent } from 'vitest/browser';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { FormContainer } from '@piplup/rhf-core';
 import dayjs from 'dayjs';
+import { useFormState } from 'react-hook-form';
 import { MuiXTimePickerElement } from './element';
+
+function TouchedState({ name }: { name: string }) {
+  const { touchedFields } = useFormState();
+  return <span data-testid="touched">{touchedFields[name] ? 'touched' : 'untouched'}</span>;
+}
 
 describe('MuiXTimePickerElement', () => {
   test('renders default time from defaultValues', async () => {
@@ -62,5 +68,45 @@ describe('MuiXTimePickerElement', () => {
     const field = screen.getByRole('group');
     await expect.element(field).toBeInTheDocument();
     await expect.element(field).toHaveTextContent(target.format('hh:mm A'));
+  });
+
+  test('marks the field as touched when the text field loses focus', async () => {
+    const onClose = vi.fn();
+    const screen = await render(
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <FormContainer>
+          <MuiXTimePickerElement name="time" onClose={onClose} />
+          <TouchedState name="time" />
+          <button type="button">Outside</button>
+        </FormContainer>
+      </LocalizationProvider>,
+    );
+
+    await expect.element(screen.getByTestId('touched')).toHaveTextContent('untouched');
+
+    await userEvent.click(screen.getByRole('spinbutton', { name: 'Hours' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Outside' }));
+
+    await expect.element(screen.getByTestId('touched')).toHaveTextContent(/^touched$/);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  test('calls onClose and marks the field as touched when the picker closes', async () => {
+    const onClose = vi.fn();
+    const screen = await render(
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <FormContainer>
+          <MuiXTimePickerElement name="time" onClose={onClose} />
+          <TouchedState name="time" />
+        </FormContainer>
+      </LocalizationProvider>,
+    );
+
+    await userEvent.click(screen.getByLabelText('Choose time'));
+    await expect.element(screen.getByLabelText('Select hours')).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+
+    await expect.poll(() => onClose.mock.calls.length).toBe(1);
+    await expect.element(screen.getByTestId('touched')).toHaveTextContent(/^touched$/);
   });
 });

@@ -1,5 +1,6 @@
 import type * as React from 'react';
 import { type PickerValidDate } from '@mui/x-date-pickers';
+import { execSequentially } from '@piplup/utils';
 import { type FieldPath, type FieldValues } from 'react-hook-form';
 import {
   useUnstableBaseTimePickerAdapter as useBaseTimePickerAdapter,
@@ -36,7 +37,6 @@ export function useMuiXTimePickerAdapter<
     {
       ...props,
       helperText: undefined,
-      onBlur: onClose,
     },
     inputRef,
   );
@@ -44,13 +44,14 @@ export function useMuiXTimePickerAdapter<
   const composedSlotProps = useComposePickerSlotProps({
     error,
     helperText,
+    onBlur,
     slotProps,
   });
 
   return {
     ...adapter,
     inputRef: adapter.ref,
-    onClose: onBlur,
+    onClose: execSequentially(onBlur, onClose),
     ref,
     slotProps: composedSlotProps,
   };
