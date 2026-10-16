@@ -60,7 +60,15 @@ function MuiXMonthCalendarComponent<
     ...rest
   } = props;
 
-  const adapter = useMuiXMonthCalendarAdapter(
+  // MonthCalendar has no `error`, `helperText`, `shouldDisableDate` or `shouldDisableYear` prop,
+  // so keep them off the DOM.
+  const {
+    error: _error,
+    helperText: _helperText,
+    shouldDisableDate: _shouldDisableDate,
+    shouldDisableYear: _shouldDisableYear,
+    ...adapter
+  } = useMuiXMonthCalendarAdapter(
     {
       className,
       composeClassName: false,
