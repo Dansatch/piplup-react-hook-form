@@ -30,6 +30,20 @@ describe('useComposeRules', () => {
     expect(container.querySelector('[data-cy=r]')?.textContent).toContain('pattern');
   });
 
+  it('does not modify the rules object passed in', () => {
+    const shared = { validate: () => true };
+    render(<Comp maxLength={10} required rules={shared} />);
+    render(<Comp rules={shared} />);
+    expect(Object.keys(shared)).toEqual(['validate']);
+  });
+
+  it('does not leak composed rules between fields sharing a rules object', () => {
+    const shared = {};
+    render(<Comp required rules={shared} />);
+    const { container } = render(<Comp rules={shared} />);
+    expect(container.querySelector('[data-cy=r]')?.textContent).toBe('{}');
+  });
+
   it('adds min and max rules when the limit is 0', () => {
     const { container } = render(<Comp max={0} min={0} />);
     const rules = JSON.parse(container.querySelector('[data-cy=r]')?.textContent ?? '{}');
