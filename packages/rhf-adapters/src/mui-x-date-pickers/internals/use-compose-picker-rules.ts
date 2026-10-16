@@ -135,40 +135,35 @@ export function useUnstableComposePickerRules<
     RegisterOptions<TFieldValues, TName>,
     'disabled' | 'setValueAs' | 'valueAsDate' | 'valueAsNumber'
   > = { ...rulesProp };
-  if (!rules.validate) {
-    if (rules.validate === 'function') {
-      const validateFunc = rules.validate;
-      rules.validate = {
-        validate: validateFunc,
-      };
-    }
-    rules.validate = {
-      ...rules.validate,
-      internal: (value: TTransformedValue) => {
-        if (!value) {
-          return true;
-        }
-        const error = validator({
-          adapter,
-          props: validationProps,
-          timezone:
-            timezone ??
-            (value !== null && adapter.isValid(value as NonNullable<TTransformedValue>)
-              ? adapter.getTimezone(value as NonNullable<TTransformedValue>)
-              : 'default'),
-          value,
-        });
+  // Keep any user-provided `validate` and always add the picker's own validation next to it.
+  const userValidate =
+    typeof rules.validate === 'function' ? { validate: rules.validate } : rules.validate;
+  rules.validate = {
+    ...userValidate,
+    internal: (value: TTransformedValue) => {
+      if (!value) {
+        return true;
+      }
+      const error = validator({
+        adapter,
+        props: validationProps,
+        timezone:
+          timezone ??
+          (value !== null && adapter.isValid(value as NonNullable<TTransformedValue>)
+            ? adapter.getTimezone(value as NonNullable<TTransformedValue>)
+            : 'default'),
+        value,
+      });
 
-        const messageFn =
-          error &&
-          Object.prototype.hasOwnProperty.call(errorMessages, error as unknown as PropertyKey)
-            ? errorMessages[error as keyof typeof errorMessages]
-            : null;
-        const message = typeof messageFn === 'function' ? messageFn(value) : '';
-        return message || undefined;
-      },
-    };
-  }
+      const messageFn =
+        error &&
+        Object.prototype.hasOwnProperty.call(errorMessages, error as unknown as PropertyKey)
+          ? errorMessages[error as keyof typeof errorMessages]
+          : null;
+      const message = typeof messageFn === 'function' ? messageFn(value) : '';
+      return message || undefined;
+    },
+  };
 
   return rules;
 }
