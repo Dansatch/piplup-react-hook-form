@@ -75,7 +75,8 @@ export function getMessage(
   ...values: any
 ): string {
   return (
-    (typeof messageOrFunction === 'function' ? messageOrFunction(values) : messageOrFunction) || ''
+    (typeof messageOrFunction === 'function' ? messageOrFunction(...values) : messageOrFunction) ||
+    ''
   );
 }
 
@@ -165,20 +166,21 @@ export function useUnstableComposeRules<
   }
 
   if (!rules.pattern && pattern) {
+    const patternRegExp = pattern instanceof RegExp ? pattern : new RegExp(pattern);
     rules.pattern = {
-      message: getMessage(messages?.pattern ?? defaultMessages?.pattern, pattern, title),
-      value: pattern instanceof RegExp ? pattern : new RegExp(pattern),
+      message: getMessage(messages?.pattern ?? defaultMessages?.pattern, patternRegExp, title),
+      value: patternRegExp,
     };
   }
 
-  if (!rules.min && min) {
+  if (rules.min === undefined && min !== undefined && min !== '') {
     rules.min = {
       message: getMessage(messages?.min ?? defaultMessages?.min, min),
       value: min,
     };
   }
 
-  if (!rules.max && max) {
+  if (rules.max === undefined && max !== undefined && max !== '') {
     rules.max = {
       message: getMessage(messages?.max ?? defaultMessages?.max, max),
       value: max,
