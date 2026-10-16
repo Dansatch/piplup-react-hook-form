@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { type FieldValues } from 'react-hook-form';
 import {
+  getMessage,
   useUnstableComposeRules as useComposeRules,
   type UseComposeRulesProps,
 } from './use-compose-rules';
@@ -41,5 +42,36 @@ describe('useComposeRules', () => {
     const rules = JSON.parse(container.querySelector('[data-cy=r]')?.textContent ?? '{}');
     expect(rules.min).toBe(0);
     expect(rules.max).toBe(0);
+  });
+
+  it('passes rule values to message functions as separate arguments', () => {
+    const { container } = render(
+      <Comp
+        max={8}
+        messages={{
+          max: (max) => `max:${typeof max}:${max}`,
+          pattern: (pattern, title) => `pattern:${pattern.source}:${title}`,
+        }}
+        pattern="^a"
+        title="Starts with a"
+      />,
+    );
+    const rules = JSON.parse(container.querySelector('[data-cy=r]')?.textContent ?? '{}');
+    expect(rules.max.message).toBe('max:number:8');
+    expect(rules.pattern.message).toBe('pattern:^a:Starts with a');
+  });
+
+  it('includes the title in the default pattern message', () => {
+    const { container } = render(<Comp pattern="^a" title="Starts with a" />);
+    const rules = JSON.parse(container.querySelector('[data-cy=r]')?.textContent ?? '{}');
+    expect(rules.pattern.message).toBe('Please match the requested format. Starts with a');
+  });
+});
+
+describe('getMessage', () => {
+  it('returns strings as-is and calls functions with spread arguments', () => {
+    expect(getMessage('Required')).toBe('Required');
+    expect(getMessage((a: number, b: number) => `${a + b}`, 2, 3)).toBe('5');
+    expect(getMessage(undefined)).toBe('');
   });
 });

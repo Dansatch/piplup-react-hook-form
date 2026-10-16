@@ -50,6 +50,7 @@ function MuiOutlinedInputComponent<
     disableOnIsSubmitting,
     error,
     indeterminate,
+    inputRef,
     max,
     maxLength,
     messages,
@@ -70,7 +71,11 @@ function MuiOutlinedInputComponent<
     ...rest
   } = props;
 
-  const { helperText: _helperText, ...adapter } = useMuiOutlinedInputAdapter(
+  const {
+    helperText: _helperText,
+    ref: fieldInputRef,
+    ...adapter
+  } = useMuiOutlinedInputAdapter(
     {
       checked,
       classes,
@@ -102,10 +107,11 @@ function MuiOutlinedInputComponent<
       type,
       value,
     },
-    ref,
+    // Merge the field ref with any user `inputRef` so React Hook Form can focus the <input>.
+    inputRef,
   );
 
-  return <OutlinedInput {...rest} {...adapter} />;
+  return <OutlinedInput {...rest} {...adapter} inputRef={fieldInputRef} ref={ref} />;
 }
 
 export const MuiOutlinedInputElement = React.forwardRef(
